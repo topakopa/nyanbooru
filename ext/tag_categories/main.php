@@ -8,7 +8,10 @@ use MicroHTML\HTMLElement;
 
 use function MicroHTML\SPAN;
 
-/** @extends Extension<TagCategoriesTheme> */
+/**
+ * @phpstan-type TagCategoryRow array{category:string,display_singular:string,display_multiple:string,color:string}
+ * @extends Extension<TagCategoriesTheme>
+ */
 final class TagCategories extends Extension
 {
     public const KEY = "tag_categories";
@@ -16,7 +19,7 @@ final class TagCategories extends Extension
     #[EventListener]
     public function onDatabaseUpgrade(DatabaseUpgradeEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
 
         if ($this->get_version() < 1) {
             // primary extension database, holds all our stuff!
@@ -62,8 +65,8 @@ final class TagCategories extends Extension
     public function onPageRequest(PageRequestEvent $event): void
     {
         if ($event->page_matches("tags/categories", method: "GET")) {
-            /** @var array<array{category: string, display_singular: string, display_multiple: string, color: string}> $tcs */
-            $tcs = Ctx::$database->get_all('SELECT * FROM image_tag_categories');
+            /** @var array<TagCategoryRow> $tcs */
+            $tcs = self::get_all_categories();
             $this->theme->show_tag_categories($tcs);
         }
         if ($event->page_matches("tags/categories", method: "POST", permission: TagCategoriesPermission::EDIT_TAG_CATEGORIES)) {
@@ -75,7 +78,7 @@ final class TagCategories extends Extension
     #[EventListener]
     public function onSearchTermParse(SearchTermParseEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
 
         if ($matches = $event->matches("/^(.+)_?tags(:|<=|<|=|>|>=)([0-9]+)$/i")) {
             $type = strtolower($matches[1]);
@@ -107,19 +110,18 @@ final class TagCategories extends Extension
     }
 
     /**
-     * @return array<string, array{category: string, display_singular: string, display_multiple: string, color: string}>
+     * @return array<string, TagCategoryRow>
      */
     public static function getKeyedDict(): array
     {
-        global $database;
         static $tc_keyed_dict = null;
 
         if (is_null($tc_keyed_dict)) {
             $tc_keyed_dict = [];
-            $tc_dict = $database->get_all('SELECT * FROM image_tag_categories');
+            $tc_dict = self::get_all_categories();
 
             foreach ($tc_dict as $row) {
-                $tc_keyed_dict[(string)$row['category']] = $row;
+                $tc_keyed_dict[$row['category']] = $row;
             }
         }
 
@@ -174,7 +176,7 @@ final class TagCategories extends Extension
 
     public function page_update(): void
     {
-        global $database;
+        $database = Ctx::$database;
 
         if (!isset($_POST['tc_status']) and
            !isset($_POST['tc_category']) and
@@ -218,5 +220,16 @@ final class TagCategories extends Extension
                 ]
             );
         }
+    }
+
+    /**
+     * Get all tag categories
+     * @return array<TagCategoryRow> Array of category records with all fields
+     */
+    public static function get_all_categories(): array
+    {
+        /** @var array<TagCategoryRow> $result */
+        $result = Ctx::$database->get_all("SELECT * FROM image_tag_categories");
+        return $result;
     }
 }

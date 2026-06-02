@@ -36,7 +36,7 @@ class Tombstones extends Extension
     #[EventListener]
     public function onDatabaseUpgrade(DatabaseUpgradeEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
         if ($this->get_version() < 1) {
             $database->create_table("tombstones", "
 				post_id INTEGER NOT NULL,
@@ -51,7 +51,7 @@ class Tombstones extends Extension
     #[EventListener(priority: 20)] // Before /post/view
     public function onPageRequest(PageRequestEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
 
         if ($event->page_matches("post/view/{post_id}")) {
             $post_id = $event->get_iarg('post_id');
@@ -63,10 +63,7 @@ class Tombstones extends Extension
                     return;
                 }
                 if (ImageBanInfo::is_enabled()) {
-                    $ban = $database->get_row(
-                        "SELECT * FROM image_bans WHERE hash=:hash",
-                        ["hash" => $tombstone["hash"]]
-                    );
+                    $ban = ImageBan::get_for_hash($tombstone["hash"]);
                 } else {
                     $ban = null;
                 }
@@ -85,7 +82,7 @@ class Tombstones extends Extension
     #[EventListener]
     public function onPostDeletion(PostDeletionEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
 
         $hash = $event->image->hash;
         $date = date("Y-m-d H:i");

@@ -198,10 +198,6 @@ trait Page_Page
     private function get_js_cache_file(string $theme_name, int $config_latest): Path
     {
         $files = array_merge(
-            [
-                new Path("vendor/bower-asset/jquery/dist/jquery.min.js"),
-                new Path("vendor/bower-asset/jquery-timeago/jquery.timeago.js"),
-            ],
             Filesystem::zglob("ext/{" . Extension::get_enabled_extensions_as_string() . "}/script.js"),
             Filesystem::zglob("themes/$theme_name/{" . implode(",", $this->get_theme_scripts()) . "}")
         );
@@ -310,7 +306,7 @@ trait Page_Page
     }
 
     /**
-     * @return array<string, string>
+     * @return array<literal-string, string>
      */
     public function body_attrs(): array
     {
@@ -370,11 +366,9 @@ trait Page_Page
     {
         $html = SECTION(['id' => $block->id]);
         if (!empty($block->header)) {
-            $html->appendChild(H3(["data-toggle-sel" => "#{$block->id}", "class" => $hidable ? "shm-toggler" : ""], $block->header));
+            $html->appendChild(H3(["data-toggle-sel" => "#{$block->id} .blockbody", "class" => $hidable ? "shm-toggler" : ""], $block->header));
         }
-        if (!empty($block->body)) {
-            $html->appendChild(DIV(['class' => "blockbody"], $block->body));
-        }
+        $html->appendChild(DIV(['class' => "blockbody"], $block->body));
         return $html;
     }
 

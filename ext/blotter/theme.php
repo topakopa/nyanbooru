@@ -7,12 +7,12 @@ namespace Shimmie2;
 use function MicroHTML\{A, BR, DIV, INPUT, LI, P, SPAN, TABLE, TBODY, TD, TEXTAREA, TFOOT, TH, THEAD, TR, UL, emptyHTML};
 
 /**
- * @phpstan-type BlotterEntry array{id:int,entry_date:string,entry_text:string,important:bool}
+ * @phpstan-type BlotterRow array{id:int,entry_date:string,entry_text:string,important:bool}
  */
 class BlotterTheme extends Themelet
 {
     /**
-     * @param BlotterEntry[] $entries
+     * @param BlotterRow[] $entries
      */
     public function display_editor(array $entries): void
     {
@@ -63,7 +63,7 @@ class BlotterTheme extends Themelet
     }
 
     /**
-     * @param BlotterEntry[] $entries
+     * @param BlotterRow[] $entries
      */
     public function display_blotter_page(array $entries): void
     {
@@ -85,7 +85,7 @@ class BlotterTheme extends Themelet
     }
 
     /**
-     * @param BlotterEntry[] $entries
+     * @param BlotterRow[] $entries
      */
     public function display_blotter(array $entries): void
     {
@@ -126,7 +126,7 @@ class BlotterTheme extends Themelet
                 $pos_break,
                 SPAN(
                     ["style" => $pos_align],
-                    A(["href" => "#", "id" => "blotter2-toggle", "class" => "shm-blotter2-toggle"], "Show/Hide"),
+                    A(["href" => "#", "class" => "shm-toggler", "data-toggle-sel" => ".shm-blotter2"], "Show/Hide"),
                     " ",
                     A(["href" => make_link("blotter/list")], "Show All")
                 ),

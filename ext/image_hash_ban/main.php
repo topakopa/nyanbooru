@@ -60,7 +60,7 @@ final class ImageBan extends Extension
     #[EventListener]
     public function onDatabaseUpgrade(DatabaseUpgradeEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
         if ($this->get_version() < 1) {
             $database->create_table("image_bans", "
 				id SCORE_AIPK,
@@ -75,7 +75,7 @@ final class ImageBan extends Extension
     #[EventListener(priority: 30)] // in before resolution limit plugin
     public function onDataUpload(DataUploadEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
         $row = $database->get_row("SELECT * FROM image_bans WHERE hash = :hash", ["hash" => $event->hash]);
         if ($row) {
             Log::info("image_hash_ban", "Attempted to upload a blocked image ({$event->hash} - {$row['reason']})");
@@ -155,7 +155,7 @@ final class ImageBan extends Extension
     #[EventListener]
     public function onAddImageHashBan(AddImageHashBanEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
         $database->execute(
             "INSERT INTO image_bans (hash, reason, date) VALUES (:hash, :reason, now())",
             ["hash" => $event->hash, "reason" => $event->reason]
@@ -166,7 +166,7 @@ final class ImageBan extends Extension
     #[EventListener]
     public function onRemoveImageHashBan(RemoveImageHashBanEvent $event): void
     {
-        global $database;
+        $database = Ctx::$database;
         $database->execute("DELETE FROM image_bans WHERE hash = :hash", ["hash" => $event->hash]);
     }
 
@@ -182,5 +182,18 @@ final class ImageBan extends Extension
                 INPUT(["type" => 'submit', "value" => 'Ban Hash and Delete Post']),
             ));
         }
+    }
+
+    /**
+     * Get ban record for a given hash
+     * @param string $hash The image hash to look up
+     * @return array<string, mixed>|null Ban record array with keys [id, hash, date, reason], or null if not found
+     */
+    public static function get_for_hash(string $hash): ?array
+    {
+        return Ctx::$database->get_row(
+            "SELECT * FROM image_bans WHERE hash = :hash",
+            ["hash" => $hash]
+        );
     }
 }

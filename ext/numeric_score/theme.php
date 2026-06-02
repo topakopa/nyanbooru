@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimmie2;
 
-use function MicroHTML\{A, BR, DIV, H3, INPUT, P, emptyHTML, joinHTML};
+use function MicroHTML\{A, BR, DIV, H3, INPUT, P, emptyHTML};
 
 use MicroHTML\HTMLElement;
 
@@ -28,6 +28,7 @@ class NumericScoreTheme extends Themelet
                 INPUT(['type' => 'hidden', 'name' => 'image_id', 'value' => $image->id]),
                 SHM_SUBMIT('Remove All Votes')
             );
+            $votes_url_json = json_encode(make_link("numeric_score/votes/$image->id"));
             $voters = emptyHTML(
                 BR(),
                 DIV(
@@ -35,7 +36,7 @@ class NumericScoreTheme extends Themelet
                     A(
                         [
                             "href" => make_link("numeric_score/votes/$image->id"),
-                            "onclick" => '$("#votes-content").load("'.make_link("numeric_score/votes/$image->id").'"); return false;',
+                            "onclick" => 'fetch(' . $votes_url_json . ').then(r => r.text()).then(html => document.getElementById("votes-content").innerHTML = html); return false;',
                         ],
                         "See All Votes"
                     )
@@ -83,8 +84,7 @@ class NumericScoreTheme extends Themelet
                 " $current ",
                 A(["href" => $f_dte], ">>")
             ),
-            BR(),
-            joinHTML("\n", $pop_images)
+            DIV(["class" => "shm-image-list"], ...$pop_images)
         );
 
         Ctx::$page->set_title("Popular Posts");
