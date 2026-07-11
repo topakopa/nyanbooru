@@ -33,6 +33,7 @@ final class FileExtension
     public const HTML = 'html';
     public const HTM = 'htm';
     public const ICO = 'ico';
+    public const IT = 'it';
     public const JFIF = 'jfif';
     public const JFI = 'jfi';
     public const JPEG = 'jpeg';
@@ -46,6 +47,7 @@ final class FileExtension
     public const M4A = 'm4a';
     public const MPEG = 'mpeg';
     public const MPG = 'mpg';
+    public const MOD = 'mod';
     public const OGG = 'ogg';
     public const OGG_VIDEO = 'ogv';
     public const OGG_AUDIO = 'oga';
@@ -70,6 +72,7 @@ final class FileExtension
     public const WMV = 'wmv';
     public const XML = 'xml';
     public const XSL = 'xsl';
+    public const XM = 'xm';
     public const ZIP = 'zip';
 
     /**

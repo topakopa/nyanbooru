@@ -64,9 +64,11 @@ final class AudioFileHandler extends DataHandlerExtension
         // Try to extract embedded album art using ffmpeg
         $tmpname = shm_tempnam("ffmpeg_audio_thumb", suffix: ".jpg");
         try {
+            $scaled_size = ThumbnailUtil::get_thumbnail_size($image->width, $image->height, true);
             $command = new CommandBuilder(Ctx::$config->get(VideoFileHandlerConfig::FFMPEG_PATH));
             $command->add_args("-y", "-hide_banner", "-loglevel", "quiet");
             $command->add_args("-i", $inname->str());
+            $command->add_args("-vf", "scale=$scaled_size[0]:$scaled_size[1],thumbnail");
             $command->add_args("-an"); // Disable audio
             $command->add_args($tmpname->str());
             $command->execute();
@@ -74,7 +76,6 @@ final class AudioFileHandler extends DataHandlerExtension
             // Check if we successfully extracted an image
             if ($tmpname->exists() && filesize($tmpname->str()) > 0) {
                 $mime = MimeType::get_for_file($tmpname);
-                $scaled_size = ThumbnailUtil::get_thumbnail_size(1, 1, true);
                 ThumbnailUtil::create_scaled_image($tmpname, $outname, $scaled_size, $mime);
                 $tmpname->unlink();
                 return true;

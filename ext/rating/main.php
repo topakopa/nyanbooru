@@ -31,7 +31,8 @@ function add_rating(ImageRating $rating): void
 }
 
 add_rating(new ImageRating("?", "Unrated", "unrated", 99999));
-add_rating(new ImageRating("s", "Safe", "safe", 0));
+add_rating(new ImageRating("p", "Public", "public", 1));
+add_rating(new ImageRating("s", "Safe", "safe", 1));
 add_rating(new ImageRating("q", "Questionable", "questionable", 500));
 add_rating(new ImageRating("e", "Explicit", "explicit", 1000));
 // @phpstan-ignore-next-line
@@ -196,8 +197,8 @@ final class Ratings extends Extension
     {
         $matches = [];
         if (is_null($event->term) && $this->no_rating_query($event->context)) {
-            $set = Ratings::get_user_default_ratings();
-            $event->add_querylet(new Querylet("rating IN :ratings", ["ratings" => $set]));
+            $set = Ratings::privs_to_sql(Ratings::get_user_default_ratings());
+            $event->add_querylet(new Querylet("rating IN ($set)"));
         }
 
         if ($matches = $event->matches($this->search_regexp)) {
@@ -213,7 +214,8 @@ final class Ratings extends Extension
                 $ratings = array_intersect(str_split($ratings), Ratings::get_user_class_privs(Ctx::$user));
             }
 
-            $event->add_querylet(new Querylet("rating IN :ratings", ["ratings" => $ratings]));
+            $set = "'" . join("', '", $ratings) . "'";
+            $event->add_querylet(new Querylet("rating IN ($set)"));
         }
     }
 
@@ -245,7 +247,7 @@ final class Ratings extends Extension
     #[EventListener]
     public function onAdminBuilding(AdminBuildingEvent $event): void
     {
-        $database = Ctx::$database;
+        global $database;
 
         $results = $database->get_col("SELECT DISTINCT rating FROM images ORDER BY rating");
         $original_values = [];
@@ -407,6 +409,21 @@ final class Ratings extends Extension
         return array_intersect($available, $selected);
     }
 
+    /**
+     * @param string[] $privs
+     */
+    public static function privs_to_sql(array $privs): string
+    {
+        $arr = [];
+        foreach ($privs as $i) {
+            $arr[] = "'" . $i . "'";
+        }
+        if (count($arr) === 0) {
+            return "' '";
+        }
+        return join(', ', $arr);
+    }
+
     public static function rating_to_human(string $rating): string
     {
         if (array_key_exists($rating, ImageRating::$known_ratings)) {
@@ -436,7 +453,7 @@ final class Ratings extends Extension
     #[EventListener]
     public function onDatabaseUpgrade(DatabaseUpgradeEvent $event): void
     {
-        $database = Ctx::$database;
+        global $database;
 
         if ($this->get_version() < 1) {
             $database->execute("ALTER TABLE images ADD COLUMN rating CHAR(1) NOT NULL DEFAULT '?'");
@@ -496,7 +513,7 @@ final class Ratings extends Extension
 
     private function set_rating(int $image_id, string $rating, string $old_rating): void
     {
-        $database = Ctx::$database;
+        global $database;
         if ($old_rating !== $rating) {
             $database->execute("UPDATE images SET rating=:rating WHERE id=:id", ['rating' => $rating, 'id' => $image_id]);
             Log::info("rating", "Rating for >>{$image_id} set to: ".self::rating_to_human($rating));

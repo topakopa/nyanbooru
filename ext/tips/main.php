@@ -25,7 +25,7 @@ final class DeleteTipEvent extends Event
 }
 
 /**
- * @phpstan-type TipRow array{id: int, image: string, text: string, enable: bool}
+ * @phpstan-type Tip array{id: int, image: string, text: string, enable: bool}
  * @extends Extension<TipsTheme>
  */
 final class Tips extends Extension
@@ -56,8 +56,10 @@ final class Tips extends Extension
     #[EventListener]
     public function onPageRequest(PageRequestEvent $event): void
     {
-        $this->getTip();
-
+        if ($event->page_matches("home"))
+        {
+            $this->getTip();
+        }
         if ($event->page_matches("tips/list", permission: TipsPermission::ADMIN)) {
             $this->manageTips();
             $this->getAll();
@@ -123,7 +125,7 @@ final class Tips extends Extension
 
     private function getTip(): void
     {
-        /** @var ?TipRow $tip */
+        /** @var ?Tip $tip */
         $tip = Ctx::$database->get_row("
             SELECT *
             FROM tips
@@ -139,7 +141,7 @@ final class Tips extends Extension
 
     private function getAll(): void
     {
-        /** @var array<TipRow> $tips */
+        /** @var array<Tip> $tips */
         $tips = Ctx::$database->get_all("SELECT * FROM tips ORDER BY id ASC");
         $this->theme->showAll($tips);
     }

@@ -19,7 +19,7 @@ class UploadTheme extends Themelet
 
     public function display_full(): void
     {
-        Ctx::$page->add_block(new Block("Upload", emptyHTML("Disk nearly full, uploads disabled"), "left", 20));
+        Ctx::$page->add_block(new Block("Upload", emptyHTML("Всё позасрали своими мемами, что у нас аж закончилось место"), "left", 20));
     }
 
     public function display_page(): void
@@ -50,7 +50,7 @@ class UploadTheme extends Themelet
                     TD(["colspan" => "7"], $captcha)
                 ) : null,
                 TR(
-                    TD(["colspan" => "7"], INPUT(["id" => "uploadbutton", "type" => "submit", "value" => "Post"]))
+                    TD(["colspan" => "7"], INPUT(["id" => "uploadbutton", "type" => "submit", "value" => "Запостить!"]))
                 ),
             )
         );
@@ -58,10 +58,10 @@ class UploadTheme extends Themelet
             $form,
             SMALL(
                 "(",
-                $max_size > 0 ? "File limit $max_kb" : null,
+                $max_size > 0 ? "Лимит на пост $max_kb" : null,
                 $max_size > 0 && $max_total_size > 0 ? " / " : null,
-                $max_total_size > 0 ? "Total limit $max_total_kb" : null,
-                " / Current total ",
+                $max_total_size > 0 ? "Общий лимит $max_total_kb" : null,
+                " / Всего памяти ",
                 SPAN(["id" => "upload_size_tracker"], "0KB"),
                 ")"
             ),
@@ -72,11 +72,11 @@ class UploadTheme extends Themelet
         );
 
         $page = Ctx::$page;
-        $page->set_title("Upload");
+        $page->set_title("Постим");
         $this->display_navigation();
-        $page->add_block(new Block("Upload", $html, "main", 20));
+        $page->add_block(new Block("Запостить", $html, "main", 20));
         if ($tl_enabled) {
-            $page->add_block(new Block("Bookmarklets", $this->build_bookmarklets(), "left", 20));
+            $page->add_block(new Block("Закладочки", $this->build_bookmarklets(), "left", 20));
         }
     }
 
@@ -98,8 +98,8 @@ class UploadTheme extends Themelet
         $upload_list->appendChild(
             TR(
                 ["class" => "header"],
-                TH(["colspan" => 2], "Select File"),
-                TH($tl_enabled ? "or URL" : null),
+                TH(["colspan" => 2], "Вставь файл"),
+                TH($tl_enabled ? "или ссылку" : null),
                 $headers,
             )
         );
@@ -162,10 +162,10 @@ class UploadTheme extends Themelet
                     window.location = "'. $main_page .'?url="+encodeURIComponent(window.location.href);
                 }
                 else if(window.location.href.match("\/\/'. $_SERVER["HTTP_HOST"] .'.*")) {
-                    alert("You are already at '. $title .'!");
+                    alert("Ты и так уже в '. $title .'!");
                 }
                 else {
-                    var tags = prompt("Please enter tags", "tagme");
+                    var tags = prompt("Проставь теги!", "tagme");
                     if(tags !== "" && tags !== null) {
                         var link = "'. $link . $delimiter .'url="+location.href+"&tags="+tags;
                         var w = window.open(link, "_blank");
@@ -174,26 +174,29 @@ class UploadTheme extends Themelet
             }
         )();';
         $html1 = P(
-            A(["href" => $js], "Upload to $title"),
-            emptyHTML(' (Drag & drop onto your bookmarks toolbar, then click when looking at a post)')
+            A(["href" => $js], "Запостить в $title"),
+            emptyHTML(' (Перетащи это на панель с закладками, и тыкай если захочешь запостить картинку с любой страницы)')
         );
 
         // Bookmarklet checks if shimmie supports ext. If not, won't upload to site/shows alert saying not supported.
         $supported_ext = join(" ", DataHandlerExtension::get_all_supported_exts());
 
-        $title = "Booru to " . Ctx::$config->get(SetupConfig::TITLE);
+        $title = "С бору на " . Ctx::$config->get(SetupConfig::TITLE);
         // CA=0: Ask to use current or new tags | CA=1: Always use current tags | CA=2: Always use new tags
         $js = '
-            javascript:
-            var ste=&quot;'. $link . $delimiter .'url=&quot;;
-            var supext=&quot;'.$supported_ext.'&quot;;
-            var maxsize=&quot;'.$max_kb.'&quot;;
-            var CA=0;
-            void(document.body.appendChild(document.createElement(&quot;script&quot;)).src=&quot;'.Url::base()->asAbsolute()."/ext/upload/bookmarklet.js".'&quot;)
+        javascript:(function(){
+        window.ste = "'. $link . $delimiter .'?url=";
+        window.supext = "'.$supported_ext.'";
+        window.maxsize = "'.$max_kb.'";
+        window.CA = 0;
+        var s = document.createElement("script");
+        s.src = "'.Url::base()->asAbsolute()."/ext/upload/bookmarklet.js".'";
+        document.body.appendChild(s);
+        })();
         ';
         $html2 = P(
             A(["href" => $js], $title),
-            emptyHTML(" (Click when looking at a post page. Works on sites running Shimmie / Danbooru / Gelbooru. (This also grabs the tags / rating / source!))"),
+            emptyHTML(" (Тыкни когда находишься на странице интересующего тебя поста. Работает на всех сайтах с Shimmie / Danbooru / Gelbooru. (За собой так-же тащит теги / рейтинг / источники!))"),
         );
 
         return emptyHTML($html1, $html2);
@@ -213,15 +216,15 @@ class UploadTheme extends Themelet
         $errors = array_filter($results, fn ($r) => is_a($r, UploadError::class));
 
         if (count($errors) > 0) {
-            $page->set_title("Upload Status");
+            $page->set_title("Статус постинга");
             $this->display_navigation();
             foreach ($errors as $error) {
                 $page->add_block(new Block($error->name, format_text($error->error)));
             }
         } elseif (count($successes) === 0) {
-            $page->set_title("No images uploaded");
+            $page->set_title("А где?");
             $this->display_navigation();
-            $page->add_block(new Block("No images uploaded", emptyHTML("Upload attempted, but nothing succeeded and nothing failed?")));
+            $page->add_block(new Block("Ничего не произошло", emptyHTML("Ты только что выложил целое... ничего? Что ты пытался вообще сделать?")));
         } elseif (count($successes) === 1) {
             $page->set_redirect(make_link("post/view/{$successes[0]->image_id}"));
             $page->add_http_header("X-Shimmie-Post-ID: " . $successes[0]->image_id);
@@ -249,7 +252,7 @@ class UploadTheme extends Themelet
                 INPUT(["id" => "data[]", "name" => "data[]", "size" => "16", "type" => "file", "accept" => $accept, "multiple" => true]),
                 INPUT(["name" => "tags", "type" => "text", "placeholder" => "tagme", "class" => "autocomplete_tags", "required" => true]),
                 Captcha::get_html(UploadPermission::SKIP_UPLOAD_CAPTCHA),
-                INPUT(["type" => "submit", "value" => "Post"]),
+                INPUT(["type" => "submit", "value" => "Запостить!"]),
             )
         );
 
@@ -258,12 +261,12 @@ class UploadTheme extends Themelet
             $form,
             SMALL(
                 "(",
-                $max_size > 0 ? "File limit $max_kb" : null,
+                $max_size > 0 ? "Лимит на пост $max_kb" : null,
                 $max_size > 0 && $max_total_size > 0 ? " / " : null,
-                $max_total_size > 0 ? "Total limit $max_total_kb" : null,
+                $max_total_size > 0 ? "Общий лимит $max_total_kb" : null,
                 ")",
             ),
-            NOSCRIPT(BR(), A(["href" => make_link("upload")], "Larger Form"))
+            NOSCRIPT(BR(), A(["href" => make_link("upload")], "Форма побольше"))
         );
     }
     protected function get_accept(): string

@@ -1,0 +1,7 @@
+#webamp-container {
+	height: 146px;
+}
+
+.webamp-desktop div canvas {
+	position: fixed;
+}

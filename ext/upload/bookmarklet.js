@@ -36,7 +36,7 @@ if (document.getElementById("image-container") !== null) {
     tag = tag.replace(/\+/g, "%2B");
 
     var source =
-        "http://" +
+        "https://" +
         document.location.hostname +
         document.location.href.match("\/posts\/[0-9]+");
 
@@ -46,7 +46,7 @@ if (document.getElementById("image-container") !== null) {
         '#sidebar > section:eq(3) > ul > :contains("Size") > a',
     );
     var furl =
-        "http://" + document.location.hostname + fileinfo.getAttribute("href");
+        "https://" + document.location.hostname + fileinfo.getAttribute("href");
     var fs = fileinfo.innerText.split(" ");
     var filesize = fs[1] === "MB" ? fs[0] * 1024 : fs[0];
 
@@ -81,7 +81,7 @@ if (document.getElementById("image-container") !== null) {
     tag = tag.replace(/\+/g, "%2B");
 
     var source =
-        "http://" +
+        "https://" +
         document.location.hostname +
         (document.location.href.match("\/post\/show\/[0-9]+") ||
             encodeURIComponent(
@@ -140,85 +140,36 @@ if (document.getElementById("image-container") !== null) {
      * gelbooru
      */
     if (typeof tag !== "ftp://ftp." && chk !== 1) {
-        const tags = [];
-        const tagListHeaders = document.querySelectorAll("#tag-list h3");
-        let tagsHeader = null;
-
-        // Find the h3 that contains "Tags"
-        tagListHeaders.forEach((header) => {
-            if (header.textContent.includes("Tags")) {
-                tagsHeader = header;
-            }
-        });
-
-        if (tagsHeader) {
-            // Get all li elements that come after the Tags header until we hit another h3 or non-li
-            let nextElement = tagsHeader.nextElementSibling;
-            while (nextElement && nextElement.tagName === "LI") {
+        var tags = [];
+        $('#tag-list h3:contains("Tags")')
+            .nextUntil(":not(li)")
+            .each(function (index) {
                 tags.push(
-                    nextElement.textContent
+                    $(this)
+                        .text()
                         .replace(/ /g, "_")
                         .replace(/[\?_]*(.*?)_(\(\?\)_)?[0-9]+$/gm, "$1"),
                 );
-                nextElement = nextElement.nextElementSibling;
-            }
-        }
+            });
         tag = tags.join(" ");
     }
     var source =
-        "http://" +
+        "https://" +
         document.location.hostname +
         (document.location.href.match("\/post\/show\/[0-9]+") ||
             document.location.href.match(
                 /\/index\.php\?page=post&s=view&id=[0-9]+/,
             ));
-    const statisticsHeaders = document.querySelectorAll("#tag-list h3");
-    let statisticsHeader = null;
-
-    // Find the h3 that contains "Statistics"
-    statisticsHeaders.forEach((header) => {
-        if (header.textContent.includes("Statistics")) {
-            statisticsHeader = header;
-        }
-    });
-
-    let rating = null;
-    if (statisticsHeader) {
-        let nextElement = statisticsHeader.nextElementSibling;
-        while (nextElement && nextElement.tagName === "LI") {
-            if (nextElement.textContent.includes("Rating")) {
-                rating = nextElement.textContent.match(
-                    "Rating: ([a-zA-Z]+)",
-                )[1];
-                break;
-            }
-            nextElement = nextElement.nextElementSibling;
-        }
-    }
-    const optionsHeaders = document.querySelectorAll("#tag-list h3");
-    let optionsHeader = null;
-
-    // Find the h3 that contains "Options"
-    optionsHeaders.forEach((header) => {
-        if (header.textContent.includes("Options")) {
-            optionsHeader = header;
-        }
-    });
-
-    let furl = null;
-    if (optionsHeader) {
-        let nextElement = optionsHeader.nextElementSibling;
-        while (nextElement && nextElement.tagName === "LI") {
-            if (nextElement.textContent.includes("Original image")) {
-                const link = nextElement.querySelector("a");
-                if (link) {
-                    furl = link.href;
-                    break;
-                }
-            }
-            nextElement = nextElement.nextElementSibling;
-        }
-    }
+    var rating = $('#tag-list h3:contains("Statistics")')
+        .nextUntil(":not(li)")
+        .filter(':contains("Rating")')
+        .text()
+        .match("Rating: ([a-zA-Z]+)")[1];
+    var furl = $('#tag-list h3:contains("Options")')
+        .nextUntil(":not(li)")
+        .filter(':contains("Original image")')
+        .find("a")
+        .first()[0].href;
     // File size is not supported because it's not provided.
 
     if (supext.search(furl.match("[a-zA-Z0-9]+$")[0]) !== -1) {
@@ -260,7 +211,7 @@ if (document.getElementById("image-container") !== null) {
 
     // TODO: Make rating show in statistics.
     var source =
-        "http://" +
+        "https://" +
         document.location.hostname +
         document.location.href.match("\/post\/view\/[0-9]+");
 

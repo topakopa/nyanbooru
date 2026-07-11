@@ -24,8 +24,8 @@ final class HomeConfig extends ConfigGroup
     public static function get_counter_options(): array
     {
         $counters = [];
-        $counters["None"] = "none";
-        $counters["Text-only"] = "text-only";
+        // $counters["None"] = "none";
+        // $counters["Text-only"] = "text-only";
         foreach (\Safe\glob("ext/home/counters/*") as $counter_dirname) {
             $name = str_replace("ext/home/counters/", "", $counter_dirname);
             $counters[ucfirst($name)] = $name;

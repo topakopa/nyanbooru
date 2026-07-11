@@ -29,6 +29,7 @@ final class MimeType
     public const OGG_AUDIO = 'audio/ogg';
     public const WMA = 'audio/x-ms-wma';
     public const WAV = 'audio/x-wav';
+    public const XMOD = 'audio/x-mod';
 
     public const AVIF = 'image/avif';
     public const BMP = 'image/bmp';

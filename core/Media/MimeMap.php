@@ -242,6 +242,11 @@ final class MimeMap
             self::MAP_EXT => [FileExtension::XSL],
             self::MAP_MIME => [MimeType::XSL],
         ],
+        MimeType::XMOD => [
+            self::MAP_NAME => "XMOD",
+            self::MAP_EXT => [FileExtension::MOD, FileExtension::XM, FileExtension::IT],
+            self::MAP_MIME => [MimeType::XMOD],
+        ],
         MimeType::ZIP => [
             self::MAP_NAME => "ZIP",
             self::MAP_EXT => [FileExtension::ZIP],

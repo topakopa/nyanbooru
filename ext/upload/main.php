@@ -166,7 +166,7 @@ final class Upload extends Extension
     #[EventListener]
     public function onDirectoryUpload(DirectoryUploadEvent $event): void
     {
-        $database = Ctx::$database;
+        global $database;
         $results = [];
 
         foreach (Filesystem::list_files($event->base) as $full_path) {
@@ -302,7 +302,7 @@ final class Upload extends Extension
      */
     private function try_upload(array $file, int $slot, QueryArray $metadata): array
     {
-        $database = Ctx::$database;
+        global $database;
 
         // blank file boxes cause empty uploads, no need for error message
         if (empty($file['name'])) {
